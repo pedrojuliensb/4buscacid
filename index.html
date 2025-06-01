@@ -44,22 +44,23 @@
       border-left: 4px solid #0070f3;
       border-radius: 5px;
     }
-    .item strong {
-      font-size: 17px;
-    }
     .cid-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 8px;
+    }
+    .cid-header strong {
+      font-size: 17px;
     }
     .cid-header button {
       background: none;
       border: none;
-      font-size: 18px;
+      font-size: 17px;
       cursor: pointer;
+      color: #0070f3;
     }
     .cid-header button:hover {
-      color: #0070f3;
+      color: #0055aa;
     }
     .item em {
       font-size: 13px;
@@ -70,7 +71,7 @@
 <body>
   <div class="container">
     <h1>BuscaCid</h1>
-    <input type="text" id="search" placeholder="Digite um código ou termo (ex: hipertensao, j45.1)" oninput="buscar()" onkeydown="if(event.key==='Enter') buscar()" />
+    <input type="text" id="search" placeholder="Digite um código ou termo (ex: hipert, j45.1, asma)" oninput="buscar()" onkeydown="if(event.key==='Enter') buscar()" />
     <div class="result" id="result"></div>
   </div>
   <script src="data.js"></script>
@@ -91,10 +92,16 @@
     }
     function buscar() {
       const termo = normalizar(document.getElementById('search').value.trim());
+      const palavras = termo.split(/\s+/);
       const resultados = data.filter(item => {
-        const cid = normalizar(item.CID);
-        const texto = normalizar(item.DESC_SUBCATEGORIA + " " + item.DESC_CATEGORIA + " " + item.DESC_GRUPO + " " + item.DESC_CAPITULO);
-        return cid.includes(termo) || texto.includes(termo);
+        const campos = [
+          normalizar(item.CID),
+          normalizar(item.DESC_SUBCATEGORIA),
+          normalizar(item.DESC_CATEGORIA),
+          normalizar(item.DESC_GRUPO),
+          normalizar(item.DESC_CAPITULO)
+        ].join(' ');
+        return palavras.every(palavra => new RegExp(`\\b${palavra}`, 'i').test(campos));
       });
       const div = document.getElementById('result');
       div.innerHTML = resultados.length ? resultados.map(r => {
