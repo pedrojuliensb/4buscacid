@@ -70,13 +70,13 @@
 <body>
   <div class="container">
     <h1>BuscaCid</h1>
-    <input type="text" id="search" placeholder="Digite um código ou termo (ex: hipertensao)" oninput="buscar()" onkeydown="if(event.key==='Enter') buscar()" />
+    <input type="text" id="search" placeholder="Digite um código ou termo (ex: hipertensao, j45.1)" oninput="buscar()" onkeydown="if(event.key==='Enter') buscar()" />
     <div class="result" id="result"></div>
   </div>
   <script src="data.js"></script>
   <script>
     function normalizar(texto) {
-      return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ç/g, "c").toLowerCase();
+      return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ç/g, "c").replace(/\./g, "").toLowerCase();
     }
     function formatarCID(cod) {
       if (cod.length === 4) {
@@ -91,16 +91,10 @@
     }
     function buscar() {
       const termo = normalizar(document.getElementById('search').value.trim());
-      const palavras = termo.split(/\s+/);
       const resultados = data.filter(item => {
-        const campos = [
-          normalizar(item.CID),
-          normalizar(item.DESC_SUBCATEGORIA),
-          normalizar(item.DESC_CATEGORIA),
-          normalizar(item.DESC_GRUPO),
-          normalizar(item.DESC_CAPITULO)
-        ].join(' ');
-        return palavras.every(palavra => new RegExp(`\\b${palavra}\\b`, 'i').test(campos));
+        const cid = normalizar(item.CID);
+        const texto = normalizar(item.DESC_SUBCATEGORIA + " " + item.DESC_CATEGORIA + " " + item.DESC_GRUPO + " " + item.DESC_CAPITULO);
+        return cid.includes(termo) || texto.includes(termo);
       });
       const div = document.getElementById('result');
       div.innerHTML = resultados.length ? resultados.map(r => {
